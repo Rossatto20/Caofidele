@@ -35,7 +35,7 @@ export const testimonialService = {
   // Get all approved testimonials
   getAll: async () => {
     try {
-      const response = await fetch(`${API_BASE}/testimonials`);
+      const response = await fetch(`${API_BASE}/testimonials/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
