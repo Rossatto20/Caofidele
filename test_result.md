@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/routes/testimonials.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Backend implementado com modelo Testimonial, rotas GET/POST, conexão MongoDB e dados de exemplo inseridos automaticamente no startup"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTE APROVADO: GET /api/testimonials retorna 4 depoimentos aprovados do MongoDB com estrutura correta (id, name, location, rating, text, dogName, breed). Tempo de resposta: 0.06s. Dados carregados corretamente da base de dados."
 
   - task: "API de Contato/Agendamento"
     implemented: true
@@ -123,11 +126,14 @@ backend:
     file: "/app/backend/routes/contact.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implementado endpoint POST /api/contact/schedule com envio de emails de notificação e confirmação usando EmailService"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTE APROVADO: POST /api/contact/schedule funciona perfeitamente com dados válidos (João Silva/Rex). Validação de campos obrigatórios funcionando (rejeita dados inválidos com HTTP 422). Processamento de emails funcionando. Tempo de resposta: 0.14s. Retorna mensagem de sucesso em português."
 
   - task: "Serviço de Email"
     implemented: true
@@ -135,11 +141,14 @@ backend:
     file: "/app/backend/email_service.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "EmailService implementado com templates HTML para notificação (empresa) e confirmação (cliente), usando SMTP configurável"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTE APROVADO: EmailService processa solicitações sem erros. Integração com formulário de contato funcionando. Templates HTML implementados. Nota: Entrega real de emails depende de configuração SMTP em produção."
 
   - task: "Conexão Database"
     implemented: true
