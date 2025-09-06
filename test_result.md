@@ -165,15 +165,18 @@ backend:
 frontend:
   - task: "Integração API Depoimentos"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/TestimonialsSection.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Componente atualizado para carregar depoimentos via API com loading states, error handling e fallback para dados mock"
+      - working: false
+        agent: "testing"
+        comment: "❌ ERRO CRÍTICO: Mixed Content error - página HTTPS tentando carregar API HTTP. Console error: 'Mixed Content: The page at 'https://pet-behavior-pro.preview.emergentagent.com/' was loaded over HTTPS, but requested an insecure resource 'http://pet-behavior-pro.preview.emergentagent.com/api/testimonials/'. Componente está usando fallback para dados mock. 4 depoimentos visíveis mas não vêm da API. SOLUÇÃO: Corrigir URL da API para HTTPS."
 
   - task: "Integração API Contato"
     implemented: true
