@@ -1,5 +1,26 @@
 // API Service for CãoFidèle frontend
-const API_BASE = process.env.REACT_APP_BACKEND_URL + '/api';
+const getBackendUrl = () => {
+  // Ensure we always use HTTPS in production
+  let backendUrl = process.env.REACT_APP_BACKEND_URL;
+  
+  // Debug logging
+  console.log('REACT_APP_BACKEND_URL from env:', backendUrl);
+  
+  // Fallback and HTTPS enforcement
+  if (!backendUrl) {
+    backendUrl = window.location.origin;
+  }
+  
+  // Force HTTPS if we're running on HTTPS
+  if (window.location.protocol === 'https:' && backendUrl.startsWith('http:')) {
+    backendUrl = backendUrl.replace('http:', 'https:');
+  }
+  
+  console.log('Final backend URL:', backendUrl);
+  return backendUrl;
+};
+
+const API_BASE = getBackendUrl() + '/api';
 
 // Testimonials API service
 export const testimonialService = {
