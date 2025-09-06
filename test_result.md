@@ -214,8 +214,8 @@ metadata:
 test_plan:
   current_focus:
     - "Integração API Depoimentos"
-    - "Integração API Contato"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Integração API Depoimentos"
   test_all: false
   test_priority: "high_first"
 
