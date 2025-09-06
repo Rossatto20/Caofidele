@@ -207,8 +207,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "API de Depoimentos"
-    - "API de Contato/Agendamento"
     - "Integração API Depoimentos"
     - "Integração API Contato"
   stuck_tasks: []
@@ -218,3 +216,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Backend CãoFidèle implementado com sucesso - APIs de depoimentos e contato funcionando, EmailService configurado, dados mock inseridos no MongoDB. Frontend integrado com carregamento via API, validação de forms e tratamento de erros. Pronto para teste completo da integração frontend-backend."
+  - agent: "testing"
+    message: "✅ BACKEND TOTALMENTE APROVADO: Todos os 5 testes passaram (100% sucesso). Health check OK, API de depoimentos retorna 4 registros do MongoDB, formulário de contato processa dados válidos e rejeita inválidos, EmailService funcional. APIs prontas para produção. Foco agora deve ser frontend se necessário."
