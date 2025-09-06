@@ -6,12 +6,12 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Phone, Mail, MapPin, Instagram, Clock, Send, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { contactInfo, trainingPlans } from '../data/mock';
-import { useToast } from '../hooks/use-toast';
+import { contactService, handleApiError } from '../services/api';
+import { toast } from 'sonner';
 
 export const ContactSection = () => {
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,41 +25,88 @@ export const ContactSection = () => {
     preferredContact: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+    
+    // Clear error when user starts typing
+    if (submitError) {
+      setSubmitError(null);
+    }
+  };
+
+  const validateForm = () => {
+    const required = ['name', 'email', 'phone', 'dogName'];
+    const missing = required.filter(field => !formData[field].trim());
+    
+    if (missing.length > 0) {
+      setSubmitError(`Por favor, preencha os campos obrigatórios: ${missing.join(', ')}`);
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setSubmitError('Por favor, insira um email válido');
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    if (!validateForm()) {
+      return;
+    }
 
-    // Simular envio do formulário (aqui será integrado com backend)
-    setTimeout(() => {
-      toast({
-        title: "Mensagem enviada com sucesso!",
-        description: "Entraremos em contato em até 24 horas para agendar sua avaliação gratuita.",
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await contactService.schedule(formData);
+      
+      if (response.success) {
+        toast.success(response.message || "Mensagem enviada com sucesso!", {
+          description: "Entraremos em contato em até 24 horas para agendar sua avaliação gratuita.",
+          duration: 5000,
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          dogName: '',
+          dogBreed: '',
+          dogAge: '',
+          selectedPlan: '',
+          behaviorIssues: '',
+          message: '',
+          preferredContact: ''
+        });
+        
+      } else {
+        throw new Error(response.message || 'Erro desconhecido');
+      }
+      
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      setSubmitError(errorMessage);
+      
+      toast.error("Erro ao enviar mensagem", {
+        description: errorMessage,
+        duration: 5000,
       });
       
-      // Resetar formulário
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        dogName: '',
-        dogBreed: '',
-        dogAge: '',
-        selectedPlan: '',
-        behaviorIssues: '',
-        message: '',
-        preferredContact: ''
-      });
-      
+    } finally {
       setIsSubmitting(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -90,6 +137,23 @@ export const ContactSection = () => {
               </p>
             </CardHeader>
             <CardContent>
+              {/* Error Alert */}
+              {submitError && (
+                <div className="mb-6">
+                  <Card className="border-red-200 bg-red-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                        <div>
+                          <p className="text-red-800 font-medium">Erro</p>
+                          <p className="text-red-700 text-sm">{submitError}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Personal Info */}
                 <div className="grid md:grid-cols-2 gap-4">
@@ -103,6 +167,7 @@ export const ContactSection = () => {
                       required
                       className="mt-1"
                       placeholder="Digite seu nome completo"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
@@ -115,6 +180,7 @@ export const ContactSection = () => {
                       required
                       className="mt-1"
                       placeholder="seu@email.com"
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
@@ -130,11 +196,16 @@ export const ContactSection = () => {
                       required
                       className="mt-1"
                       placeholder="(11) 99999-9999"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
                     <Label htmlFor="preferredContact">Prefere Contato Por</Label>
-                    <Select value={formData.preferredContact} onValueChange={(value) => handleInputChange('preferredContact', value)}>
+                    <Select 
+                      value={formData.preferredContact} 
+                      onValueChange={(value) => handleInputChange('preferredContact', value)}
+                      disabled={isSubmitting}
+                    >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Escolha uma opção" />
                       </SelectTrigger>
@@ -161,6 +232,7 @@ export const ContactSection = () => {
                         required
                         className="mt-1"
                         placeholder="Nome do seu cão"
+                        disabled={isSubmitting}
                       />
                     </div>
                     <div>
@@ -172,6 +244,7 @@ export const ContactSection = () => {
                         onChange={(e) => handleInputChange('dogBreed', e.target.value)}
                         className="mt-1"
                         placeholder="Ex: Golden Retriever"
+                        disabled={isSubmitting}
                       />
                     </div>
                     <div>
@@ -183,6 +256,7 @@ export const ContactSection = () => {
                         onChange={(e) => handleInputChange('dogAge', e.target.value)}
                         className="mt-1"
                         placeholder="Ex: 2 anos"
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -191,7 +265,11 @@ export const ContactSection = () => {
                 {/* Service Selection */}
                 <div>
                   <Label htmlFor="selectedPlan">Plano de Interesse</Label>
-                  <Select value={formData.selectedPlan} onValueChange={(value) => handleInputChange('selectedPlan', value)}>
+                  <Select 
+                    value={formData.selectedPlan} 
+                    onValueChange={(value) => handleInputChange('selectedPlan', value)}
+                    disabled={isSubmitting}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Selecione um plano (opcional)" />
                     </SelectTrigger>
@@ -215,6 +293,7 @@ export const ContactSection = () => {
                     onChange={(e) => handleInputChange('behaviorIssues', e.target.value)}
                     className="mt-1"
                     placeholder="Ex: Ansiedade, agressividade, não obedece comandos..."
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -226,6 +305,7 @@ export const ContactSection = () => {
                     onChange={(e) => handleInputChange('message', e.target.value)}
                     className="mt-1 min-h-[120px]"
                     placeholder="Conte-nos mais sobre seu cão e suas necessidades..."
+                    disabled={isSubmitting}
                   />
                 </div>
 

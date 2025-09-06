@@ -1,10 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
-import { Star, Quote } from 'lucide-react';
-import { testimonials } from '../data/mock';
+import { Star, Quote, AlertCircle } from 'lucide-react';
+import { testimonialService, handleApiError } from '../services/api';
+import { testimonials as fallbackTestimonials } from '../data/mock';
 
 export const TestimonialsSection = () => {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadTestimonials();
+  }, []);
+
+  const loadTestimonials = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const data = await testimonialService.getAll();
+      setTestimonials(data);
+      
+    } catch (err) {
+      console.error('Failed to load testimonials:', err);
+      setError(handleApiError(err));
+      
+      // Use fallback data if API fails
+      setTestimonials(fallbackTestimonials);
+      
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -15,6 +44,55 @@ export const TestimonialsSection = () => {
       />
     ));
   };
+
+  if (loading) {
+    return (
+      <section id="depoimentos" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-green-100 text-green-800">
+              Depoimentos
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              O que Nossos Clientes Dizem
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Histórias reais de transformação e sucesso na vida de centenas de tutores e seus cães
+            </p>
+          </div>
+
+          {/* Loading skeleton */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="bg-white shadow-lg border-none">
+                <CardContent className="p-8">
+                  <div className="animate-pulse">
+                    <div className="flex justify-center mb-6">
+                      <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                    </div>
+                    <div className="flex justify-center gap-1 mb-6">
+                      {[1, 2, 3, 4, 5].map((j) => (
+                        <div key={j} className="h-5 w-5 bg-gray-200 rounded"></div>
+                      ))}
+                    </div>
+                    <div className="space-y-3 mb-6">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                    <div className="text-center">
+                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-24 mx-auto"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="depoimentos" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
@@ -31,6 +109,25 @@ export const TestimonialsSection = () => {
             Histórias reais de transformação e sucesso na vida de centenas de tutores e seus cães
           </p>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-8 max-w-2xl mx-auto">
+            <Card className="border-amber-200 bg-amber-50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                  <div>
+                    <p className="text-amber-800 font-medium">Aviso</p>
+                    <p className="text-amber-700 text-sm">
+                      Exibindo depoimentos locais. {error}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Testimonials Grid */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
