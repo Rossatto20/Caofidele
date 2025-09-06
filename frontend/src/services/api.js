@@ -1,12 +1,20 @@
 // API Service for CãoFidèle frontend
 const getBackendUrl = () => {
-  // Ensure we always use HTTPS in production
+  // Check if we're in development (localhost)
+  const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (isDevelopment) {
+    // Use local backend URL for development
+    return 'http://localhost:8001';
+  }
+  
+  // For production, use environment variable
   let backendUrl = process.env.REACT_APP_BACKEND_URL;
   
   // Debug logging
   console.log('REACT_APP_BACKEND_URL from env:', backendUrl);
   
-  // Fallback and HTTPS enforcement
+  // Fallback
   if (!backendUrl) {
     backendUrl = window.location.origin;
   }
